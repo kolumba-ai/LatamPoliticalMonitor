@@ -1,0 +1,11 @@
+# Secrets: the Oriane API key is read from the ORIANE_API_KEY environment variable only.
+.env
+.env.*
+*.key
+key
+secrets/
+
+# Python / OS noise
+__pycache__/
+*.pyc
+.DS_Store

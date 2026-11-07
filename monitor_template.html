@@ -1,0 +1,474 @@
+<title>Monitor Morena TikTok</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed left rail with the three categories; main column = header, two index cards, politician filter, ranked video list. Rail becomes a top tab strip on phones. */
+:root {
+  --bg: #f6f5f3;
+  --panel: #ffffff;
+  --rail: #1f1a1d;
+  --rail-fg: #e9e3e5;
+  --rail-dim: #a39a9e;
+  --fg: #1d1a1b;
+  --muted: #6b6366;
+  --line: #e4dfe0;
+  --accent: #8a1c3b;      /* guinda, the color of the party being monitored */
+  --accent-soft: #f3e4e8;
+  --pos: #2f7a4f;
+  --pos-soft: #e2f1e7;
+  --neg: #b4322b;
+  --neg-soft: #fbe5e2;
+  --neu: #6e6a6c;
+  --neu-soft: #ecebeb;
+  --bot: #8a6d1d;
+  --bot-soft: #f6eed6;
+  --display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151214; --panel: #1d191b; --rail: #0e0c0d; --rail-fg: #ece6e8; --rail-dim: #8f878b;
+    --fg: #ece6e8; --muted: #a49ca0; --line: #302a2d; --accent: #e0708f; --accent-soft: #3a1d26;
+    --pos: #7cc9a2; --pos-soft: #1b3127; --neg: #f08a80; --neg-soft: #3a1c1a; --neu: #b3acaf; --neu-soft: #2a2628;
+    --bot: #e2c36b; --bot-soft: #352d16; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151214; --panel: #1d191b; --rail: #0e0c0d; --rail-fg: #ece6e8; --rail-dim: #8f878b;
+  --fg: #ece6e8; --muted: #a49ca0; --line: #302a2d; --accent: #e0708f; --accent-soft: #3a1d26;
+  --pos: #7cc9a2; --pos-soft: #1b3127; --neg: #f08a80; --neg-soft: #3a1c1a; --neu: #b3acaf; --neu-soft: #2a2628;
+  --bot: #e2c36b; --bot-soft: #352d16; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100%; }
+
+/* Rail */
+.rail { background: var(--rail); color: var(--rail-fg); padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
+.brand { display: flex; flex-direction: column; gap: 4px; padding-inline: 8px; }
+.brand .eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--rail-dim); }
+.brand h1 { font-family: var(--display); font-weight: 700; font-size: 22px; line-height: 1.1; margin: 0; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav a { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px; color: var(--rail-fg); text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+.nav a .n { font-family: var(--mono); font-size: 12px; color: var(--rail-dim); }
+.nav a .count { font-family: var(--mono); font-size: 12px; color: var(--rail-dim); font-variant-numeric: tabular-nums; }
+.nav a:hover { background: rgba(255,255,255,.06); }
+.nav a[aria-current="page"] { background: rgba(255,255,255,.09); border-left-color: #c94a6c; }
+.nav a:focus-visible { outline: 2px solid #c94a6c; outline-offset: 2px; }
+.rail .meta { margin-top: auto; font-size: 12px; color: var(--rail-dim); padding-inline: 8px; display: flex; flex-direction: column; gap: 6px; }
+.rail .meta b { color: var(--rail-fg); font-weight: 500; }
+
+/* Main */
+main { min-width: 0; padding-block: 28px 48px; padding-left: 32px; padding-right: max(32px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; max-width: 1240px; }
+.head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.head h2 { font-family: var(--display); font-size: 30px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.head p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.stats { display: flex; gap: 24px; }
+.stat { display: flex; flex-direction: column; }
+.stat .v { font-family: var(--mono); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Index cards */
+.indices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.idx { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.idx .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.idx h3 { margin: 0; font-family: var(--display); font-size: 16px; }
+.idx .what { font-size: 12px; color: var(--muted); }
+.idx .score { font-family: var(--mono); font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; }
+.idx .score.positive { color: var(--pos); } .idx .score.negative { color: var(--neg); } .idx .score.neutral { color: var(--neu); }
+.bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); }
+.bar span { display: block; height: 100%; }
+.bar .positive { background: var(--pos); } .bar .negative { background: var(--neg); } .bar .neutral { background: var(--neu); opacity: .55; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); }
+.legend b { font-family: var(--mono); font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.legend .positive i { background: var(--pos); } .legend .negative i { background: var(--neg); } .legend .neutral i { background: var(--neu); } .legend .bot i { background: var(--bot); }
+.botline { font-size: 12px; color: var(--muted); padding-top: 8px; border-top: 1px dashed var(--line); }
+.botline b { color: var(--bot); font-family: var(--mono); font-weight: 500; }
+
+.people { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.chip .c { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip[aria-pressed="true"] .c { color: rgba(255,255,255,.8); }
+.chip:disabled { opacity: .45; cursor: default; }
+.chip:focus-visible, .seg button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.tools { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+.seg { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); max-width: 100%; overflow-x: auto; }
+.seg .lbl { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-right: 1px solid var(--line); white-space: nowrap; display: flex; align-items: center; }
+.seg button { font: inherit; font-size: 13px; padding: 7px 11px; border: 0; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 600; }
+.search { flex: 1 1 200px; max-width: 320px; margin-left: auto; }
+.search input { width: 100%; font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--fg); }
+
+.profile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+.profile b { font-family: var(--display); font-size: 17px; }
+.profile span { color: var(--muted); }
+.profile a { color: var(--accent); }
+
+/* Table */
+.tablewrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.rank { font-family: var(--mono); color: var(--muted); width: 40px; font-variant-numeric: tabular-nums; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.num.views { font-weight: 500; }
+td.num .d { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+.title a { color: var(--fg); font-weight: 500; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.title a:hover { color: var(--accent); text-decoration: underline; }
+.title .sub { margin-top: 4px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.src { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+.src.own { border: 1px solid var(--accent); color: var(--accent); font-weight: 600; }
+.src.men { border: 1px solid var(--line); color: var(--muted); }
+.read { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; background: var(--accent-soft); color: var(--fg); }
+.read.gap { background: var(--bot-soft); color: var(--bot); font-weight: 600; }
+td.cell { width: 1%; }
+.pills { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; font-weight: 500; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.positive { background: var(--pos-soft); color: var(--pos); }
+.pill.negative { background: var(--neg-soft); color: var(--neg); }
+.pill.neutral { background: var(--neu-soft); color: var(--neu); }
+.pill.none { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.pill.none::before { display: none; }
+.pill .who { color: var(--fg); font-weight: 400; }
+.fbmeta { font-size: 11px; color: var(--muted); white-space: nowrap; margin-top: 3px; font-family: var(--mono); }
+.fbmeta .b { color: var(--bot); }
+td.go { white-space: nowrap; }
+td.go a { color: var(--accent); font-weight: 600; text-decoration: none; }
+td.go a:hover { text-decoration: underline; }
+.empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+.more { display: flex; justify-content: center; }
+.more button { font: inherit; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--fg); cursor: pointer; }
+.notes { font-size: 12px; color: var(--muted); max-width: 95ch; display: flex; flex-direction: column; gap: 6px; }
+.notes b { color: var(--fg); font-weight: 600; }
+
+@media (max-width: 980px) { .indices { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 820px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: sticky; height: auto; z-index: 5; padding-block: 12px; padding-right: max(16px, env(safe-area-inset-right, 0px)); gap: 10px; top: env(safe-area-inset-top, 0px); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--rail); }
+  .brand h1 { font-size: 18px; }
+  .nav { flex-direction: row; overflow-x: auto; gap: 6px; }
+  .nav a { grid-template-columns: auto auto; white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; padding: 8px 10px; }
+  .nav a .n { display: none; }
+  .nav a[aria-current="page"] { border-bottom-color: #c94a6c; }
+  .rail .meta { display: none; }
+  main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+  .head h2 { font-size: 24px; }
+  .search { max-width: none; margin-left: 0; }
+  table { min-width: 0; }
+  thead { display: none; }
+  tr { display: grid; grid-template-columns: 28px minmax(0,1fr) minmax(0,1fr); gap: 6px 10px; padding: 12px; border-bottom: 1px solid var(--line); }
+  tr:last-child { border-bottom: 0; }
+  td { padding: 0; border: 0; }
+  td.rank { grid-row: span 3; }
+  td.title { grid-column: 2 / 4; }
+  td.cell { width: auto; }
+  td.cell::before { content: attr(data-l); display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .pills { flex-direction: row; flex-wrap: wrap; }
+  td.num { text-align: left; font-size: 12px; }
+  td.num.views::before { content: "Vistas "; color: var(--muted); font-family: var(--body); }
+  td.go { justify-self: end; align-self: center; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <span class="eyebrow">Inteligencia de competencia</span>
+      <h1>Monitor Morena · TikTok</h1>
+    </div>
+    <nav class="nav" id="nav" aria-label="Categorías"></nav>
+    <div class="meta" id="railmeta"></div>
+  </aside>
+  <main>
+    <div class="head">
+      <div>
+        <h2 id="title"></h2>
+        <p id="desc"></p>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="indices">
+      <section class="idx" id="ip" aria-label="Índice de Presentación"></section>
+      <section class="idx" id="if" aria-label="Índice de Feedback"></section>
+    </div>
+    <div class="people" id="people" role="group" aria-label="Filtrar por político"></div>
+    <div class="profile" id="profile" hidden></div>
+    <div class="tools">
+      <div class="seg" id="src" role="group" aria-label="Origen del video">
+        <span class="lbl">Origen</span>
+        <button type="button" data-v="all" aria-pressed="true">Todos</button>
+        <button type="button" data-v="own" aria-pressed="false">Cuenta propia</button>
+        <button type="button" data-v="men" aria-pressed="false">Menciones</button>
+      </div>
+      <div class="seg" id="fp" role="group" aria-label="Filtrar por presentación">
+        <span class="lbl">Presentación</span>
+        <button type="button" data-v="all" aria-pressed="true">Todas</button>
+        <button type="button" data-v="positive" aria-pressed="false">+</button>
+        <button type="button" data-v="negative" aria-pressed="false">−</button>
+        <button type="button" data-v="neutral" aria-pressed="false">Neutral</button>
+      </div>
+      <div class="seg" id="ff" role="group" aria-label="Filtrar por feedback">
+        <span class="lbl">Feedback</span>
+        <button type="button" data-v="all" aria-pressed="true">Todos</button>
+        <button type="button" data-v="positive" aria-pressed="false">+</button>
+        <button type="button" data-v="negative" aria-pressed="false">−</button>
+        <button type="button" data-v="neutral" aria-pressed="false">Neutral</button>
+        <button type="button" data-v="gap" aria-pressed="false">Desalineados</button>
+      </div>
+      <label class="search"><input id="q" type="search" placeholder="Buscar en títulos o cuentas…" aria-label="Buscar videos"></label>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Video</th><th>Presentación</th><th>Feedback</th><th class="num">Vistas</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>No hay videos con estos filtros.</div>
+    </div>
+    <div class="more"><button type="button" id="more" hidden>Mostrar más</button></div>
+    <div class="notes" id="notes"></div>
+  </main>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+const CATS = [
+  { id: "dirigentes", n: "1", label: "Dirigentes de Partido", desc: "Dirigencia nacional de Morena y figuras de su estructura partidista." },
+  { id: "municipales", n: "2", label: "Presidentes Municipales", desc: "Alcaldes y presidentes municipales emanados de Morena o de su coalición." },
+  { id: "presidenciables", n: "3", label: "Candidatos Presidenciables", desc: "Perfiles de Morena que suenan rumbo a la elección presidencial de 2030." },
+];
+const fmt = new Intl.NumberFormat("es-MX");
+const compact = new Intl.NumberFormat("es-MX", { notation: "compact", maximumFractionDigits: 1 });
+const dfmt = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short", timeZone: "America/Mexico_City" });
+const PAGE = 50;
+const MIN_HUMAN = 3;      // human comments needed for a video-level Feedback label
+const THRESH = 20;        // |index| at or above this is positive / negative
+const KINDS = ["positive", "negative", "neutral"];
+const PL = { positive: "Positiva", negative: "Negativa", neutral: "Neutral" };
+const FL = { positive: "Positivo", negative: "Negativo", neutral: "Neutral" };
+const state = { cat: "dirigentes", person: null, src: "all", fp: "all", ff: "all", q: "", shown: PAGE };
+const FB = DATA.feedback || {};
+
+const label = s => s >= THRESH ? "positive" : s <= -THRESH ? "negative" : "neutral";
+const signed = s => (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(Math.round(s));
+// Feedback for one video: humans only (bots and "unsure" kept apart from the score only when bot).
+function feedback(id) {
+  const f = FB[id];
+  if (!f) return null;
+  const h = f.p + f.n + f.u;
+  const score = h ? (f.p - f.n) * 100 / h : 0;
+  return { ...f, h, score, kind: h >= MIN_HUMAN ? label(score) : null };
+}
+
+// Merge each category's videos, de-duplicated by video id, keeping every politician it relates to.
+const byCat = {};
+for (const c of CATS) {
+  const map = new Map();
+  const people = DATA.politicians.filter(p => p.cats.includes(c.id));
+  for (const p of people) for (const v of p.videos) {
+    let e = map.get(v.id);
+    if (!e) { e = { ...v, people: [], ownOf: [], perc: {}, fb: feedback(v.id) }; map.set(v.id, e); }
+    e.people.push(p.slug);
+    if (v.own) e.ownOf.push(p.slug);
+    e.perc[p.slug] = v.pc || "neutral";
+  }
+  byCat[c.id] = { people, videos: [...map.values()].sort((a, b) => b.views - a.views) };
+}
+const P = Object.fromEntries(DATA.politicians.map(p => [p.slug, p]));
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+}
+const title = v => (v.caption || "").split("\n")[0].trim() || `Video de @${v.handle}`;
+const url = v => `https://www.tiktok.com/@${v.handle}/video/${v.id}`;
+const focus = v => state.person ? [state.person] : v.people;
+const isOwn = v => state.person ? v.ownOf.includes(state.person) : v.ownOf.length > 0;
+// Presentation of a video in the current view: the selected politician's, or the most common across its politicians.
+function presentation(v) {
+  const ks = focus(v).map(s => v.perc[s]);
+  const sum = ks.reduce((t, k) => t + (k === "positive" ? 1 : k === "negative" ? -1 : 0), 0);
+  return sum > 0 ? "positive" : sum < 0 ? "negative" : "neutral";
+}
+function reading(v) {
+  const pr = presentation(v);
+  const fk = v.fb && v.fb.kind;
+  if (pr === "positive" && fk === "negative") return { t: "Rechazo del público", gap: true };
+  if (pr === "negative" && fk === "positive") return { t: "Público defiende", gap: true };
+  if (pr === "positive") return { t: isOwn(v) ? "Comunicación oficial" : "Posible propaganda pro-Morena" };
+  if (pr === "negative") return { t: "Posible propaganda opositora" };
+  return null;
+}
+
+function filtered() {
+  const q = state.q.toLowerCase();
+  return byCat[state.cat].videos.filter(v =>
+    (!state.person || v.people.includes(state.person)) &&
+    (state.src === "all" || (state.src === "own") === isOwn(v)) &&
+    (state.fp === "all" || focus(v).some(s => v.perc[s] === state.fp)) &&
+    (state.ff === "all" || (state.ff === "gap" ? !!(reading(v) || {}).gap : v.fb && v.fb.kind === state.ff)) &&
+    (!q || v.caption.toLowerCase().includes(q) || v.handle.toLowerCase().includes(q) || v.author.toLowerCase().includes(q)));
+}
+
+function bar(counts, aria) {
+  const tot = KINDS.reduce((t, k) => t + counts[k], 0);
+  const b = el("div", { class: "bar", role: "img", "aria-label": aria });
+  for (const k of KINDS) { const s = el("span", { class: k }); s.style.width = (tot ? counts[k] * 100 / tot : 0) + "%"; b.append(s); }
+  return b;
+}
+function legend(counts, names) {
+  const tot = KINDS.reduce((t, k) => t + counts[k], 0);
+  return el("div", { class: "legend" }, ...KINDS.map(k =>
+    el("span", { class: k }, el("i"), names[k] + " ", el("b", { text: `${tot ? Math.round(counts[k] * 100 / tot) : 0}%` }), ` (${fmt.format(counts[k])})`)));
+}
+
+function renderIndices(list) {
+  // Presentation Index: mean of +1 / 0 / −1 over video–politician pairs in view, ×100.
+  const pc = { positive: 0, negative: 0, neutral: 0 };
+  for (const v of list) for (const s of focus(v)) pc[v.perc[s]]++;
+  const pt = pc.positive + pc.negative + pc.neutral;
+  const ip = pt ? (pc.positive - pc.negative) * 100 / pt : 0;
+  document.getElementById("ip").replaceChildren(
+    el("div", { class: "top" },
+      el("div", {}, el("h3", { text: "Índice de Presentación" }), el("div", { class: "what", text: "Cómo presentan los videos al político. + sugiere propaganda pro-Morena; − sugiere propaganda opositora." })),
+      el("span", { class: "score " + label(ip), text: pt ? signed(ip) : "—" })),
+    bar(pc, `Presentación: ${pc.positive} positivas, ${pc.negative} negativas, ${pc.neutral} neutrales`),
+    legend(pc, PL));
+
+  // Feedback Index: pooled human comments across videos in view, (pro − contra) / total ×100.
+  const fc = { positive: 0, negative: 0, neutral: 0 }; let bots = 0, bp = 0, bn = 0, all = 0, vids = 0;
+  for (const v of list) {
+    const f = v.fb; if (!f) continue;
+    vids++; fc.positive += f.p; fc.negative += f.n; fc.neutral += f.u;
+    bots += f.bp + f.bn + f.bu; bp += f.bp; bn += f.bn; all += f.c;
+  }
+  const ht = fc.positive + fc.negative + fc.neutral;
+  const iff = ht ? (fc.positive - fc.negative) * 100 / ht : 0;
+  document.getElementById("if").replaceChildren(
+    el("div", { class: "top" },
+      el("div", {}, el("h3", { text: "Índice de Feedback" }), el("div", { class: "what", text: "Reacción de personas en los comentarios hacia el político. Excluye bots." })),
+      el("span", { class: "score " + (ht ? label(iff) : "neutral"), text: ht ? signed(iff) : "—" })),
+    bar(fc, `Comentarios humanos: ${fc.positive} a favor, ${fc.negative} en contra, ${fc.neutral} neutrales`),
+    legend(fc, { positive: "A favor", negative: "En contra", neutral: "Neutral" }),
+    el("div", { class: "botline" },
+      "Posibles bots: ", el("b", { text: `${all ? Math.round(bots * 100 / all) : 0}%` }),
+      ` de ${fmt.format(all)} comentarios analizados en ${fmt.format(vids)} videos · ${fmt.format(bp)} a favor, ${fmt.format(bn)} en contra, ${fmt.format(bots - bp - bn)} neutrales`));
+}
+
+function render() {
+  const cat = CATS.find(c => c.id === state.cat);
+  const { people, videos } = byCat[state.cat];
+  document.getElementById("nav").replaceChildren(...CATS.map(c => el("a", { href: "#" + c.id, "aria-current": c.id === state.cat ? "page" : "false" },
+    el("span", { class: "n", text: c.n }), el("span", { text: c.label }), el("span", { class: "count", text: fmt.format(byCat[c.id].videos.length) }))));
+  document.getElementById("title").textContent = cat.label;
+  document.getElementById("desc").textContent = cat.desc;
+
+  const list = filtered();
+  document.getElementById("stats").replaceChildren(
+    ...[[fmt.format(list.length), "Videos"], [compact.format(list.reduce((s, v) => s + v.views, 0)), "Vistas totales"], [fmt.format(new Set(list.flatMap(focus)).size), "Políticos"]]
+      .map(([v, l]) => el("div", { class: "stat" }, el("span", { class: "v", text: v }), el("span", { class: "l", text: l }))));
+  renderIndices(list);
+
+  const totals = Object.fromEntries(people.map(p => [p.slug, 0]));
+  const counts = Object.fromEntries(people.map(p => [p.slug, 0]));
+  for (const v of videos) for (const s of v.people) { totals[s] += v.views; counts[s]++; }
+  const chip = (slug, text, n) => {
+    const b = el("button", { type: "button", class: "chip", "aria-pressed": String(state.person === slug) }, text, el("span", { class: "c", text: n }));
+    if (slug && !counts[slug]) b.disabled = true;
+    b.onclick = () => { state.person = slug; state.shown = PAGE; render(); };
+    return b;
+  };
+  document.getElementById("people").replaceChildren(chip(null, "Todos", fmt.format(videos.length)),
+    ...[...people].sort((a, b) => totals[b.slug] - totals[a.slug]).map(p => chip(p.slug, p.name, fmt.format(counts[p.slug]))));
+
+  const prof = document.getElementById("profile");
+  if (state.person) {
+    const p = P[state.person];
+    const kids = [el("b", { text: p.name }), el("span", { text: p.role })];
+    kids.push(p.handle ? el("a", { href: `https://www.tiktok.com/@${p.handle}`, target: "_blank", rel: "noopener", text: `@${p.handle} ↗` })
+                       : el("span", { text: "Sin cuenta de TikTok indexada; se muestran menciones." }));
+    prof.replaceChildren(...kids); prof.hidden = false;
+  } else prof.hidden = true;
+
+  for (const id of ["src", "fp", "ff"]) for (const b of document.querySelectorAll(`#${id} button`)) b.setAttribute("aria-pressed", String(b.dataset.v === state[id]));
+
+  const rows = list.slice(0, state.shown).map((v, i) => {
+    const multi = focus(v).length > 1 || !state.person;
+    const pills = focus(v).map(s => {
+      const pill = el("span", { class: "pill " + v.perc[s] }, PL[v.perc[s]]);
+      if (multi) pill.append(el("span", { class: "who", text: "· " + P[s].name }));
+      return pill;
+    });
+    const f = v.fb;
+    const fbCell = el("td", { class: "cell", "data-l": "Feedback" });
+    if (f && f.kind) {
+      fbCell.append(el("span", { class: "pill " + f.kind }, `${FL[f.kind]} ${signed(f.score)}`));
+    } else {
+      fbCell.append(el("span", { class: "pill none", text: f ? "Pocos comentarios" : "Sin comentarios" }));
+    }
+    if (f) {
+      const b = f.bp + f.bn + f.bu;
+      fbCell.append(el("div", { class: "fbmeta" }, `${f.h} hum. `, b ? el("span", { class: "b", text: `· ${b} bot${b > 1 ? "s" : ""}` }) : ""));
+    }
+    const rd = reading(v);
+    return el("tr", {},
+      el("td", { class: "rank", text: String(i + 1) }),
+      el("td", { class: "title" },
+        el("a", { href: url(v), target: "_blank", rel: "noopener", title: v.caption, text: title(v) }),
+        el("div", { class: "sub" }, el("span", { text: `@${v.handle}` }),
+          el("span", { class: "src " + (isOwn(v) ? "own" : "men"), text: isOwn(v) ? "Cuenta propia" : "Mención" }),
+          rd ? el("span", { class: "read" + (rd.gap ? " gap" : ""), text: rd.t }) : null)),
+      el("td", { class: "cell", "data-l": "Presentación" }, el("div", { class: "pills" }, ...pills)),
+      fbCell,
+      el("td", { class: "num views" }, fmt.format(v.views), el("span", { class: "d", text: dfmt.format(new Date(v.publishedAt)) })),
+      el("td", { class: "go" }, el("a", { href: url(v), target: "_blank", rel: "noopener", "aria-label": "Ver en TikTok: " + title(v), text: "Ver en TikTok ↗" })));
+  });
+  document.getElementById("rows").replaceChildren(...rows);
+  document.getElementById("empty").hidden = list.length > 0;
+  const more = document.getElementById("more");
+  more.hidden = list.length <= state.shown;
+  more.textContent = `Mostrar más (${fmt.format(list.length - state.shown)} restantes)`;
+}
+
+document.getElementById("more").onclick = () => { state.shown += PAGE; render(); };
+for (const id of ["src", "fp", "ff"]) for (const b of document.querySelectorAll(`#${id} button`))
+  b.onclick = () => { state[id] = b.dataset.v; state.shown = PAGE; render(); };
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; state.shown = PAGE; render(); });
+
+function fromHash() {
+  const h = location.hash.slice(1);
+  const id = CATS.some(c => c.id === h) ? h : "dirigentes";
+  if (id !== state.cat) { state.cat = id; state.person = null; state.shown = PAGE; }
+  render();
+}
+window.addEventListener("hashchange", fromHash);
+
+const r = DATA.range, gen = new Date(DATA.generatedAt);
+const dlong = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" });
+document.getElementById("railmeta").replaceChildren(
+  el("span", {}, "Periodo: ", el("b", { text: `${dlong.format(new Date(r.after + "T12:00:00Z"))} – ${dlong.format(new Date(r.before + "T12:00:00Z"))}` })),
+  el("span", {}, "Actualizado: ", el("b", { text: dlong.format(gen) })),
+  el("span", { text: "Fuente: índice de Oriane (TikTok)" }));
+const note = (b, t) => el("p", { style: "margin:0" }, el("b", { text: b }), " " + t);
+document.getElementById("notes").replaceChildren(
+  note("Índice de Presentación.", "Cómo presenta cada video al político (+1 positiva, 0 neutral, −1 negativa), promediado de −100 a +100. Una presentación positiva desde la cuenta del político es comunicación oficial; desde otra cuenta, posible propaganda pro-Morena. Una presentación negativa sugiere propaganda opositora."),
+  note("Índice de Feedback.", `Postura de los comentaristas humanos hacia el político: (a favor − en contra) ÷ total de comentarios humanos, de −100 a +100. Un video necesita al menos ${MIN_HUMAN} comentarios humanos para recibir etiqueta; ±${THRESH} o más es positivo o negativo. «Desalineados» son videos donde la presentación y la reacción del público van en sentidos opuestos.`),
+  note("Comentarios y bots.", "Oriane entrega hasta 15 comentarios destacados (los más gustados) por video, no la sección completa. Los posibles bots se identificaron con señales como texto idéntico en varias cuentas, frases genéricas repetidas, cuentas que comentan en muchos videos y nombres de usuario autogenerados, revisadas comentario por comentario por un modelo de IA. Es una estimación, no una verificación."),
+  note("Origen y método.", "«Cuenta propia» son videos de la cuenta oficial del político; «Mención», videos de otras cuentas que lo nombran. Las etiquetas las asignaron modelos de IA y pueden equivocarse. Los videos que no trataban realmente del político se excluyeron. Las vistas son las registradas por Oriane al momento de la actualización. Los videos se abren en TikTok."));
+fromHash();
+</script>
